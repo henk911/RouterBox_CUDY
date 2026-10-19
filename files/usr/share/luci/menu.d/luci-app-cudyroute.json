@@ -1,0 +1,7 @@
+{
+ "admin/services/cudyroute": {
+  "title": "CudyRoute", "order": 60,
+  "action": { "type": "view", "path": "cudyroute/main" },
+  "depends": { "acl": [ "luci-app-cudyroute" ] }
+ }
+}

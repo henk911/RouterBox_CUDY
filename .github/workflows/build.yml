@@ -1,0 +1,121 @@
+name: Build CudyRoute
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cudyroute-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GOTOOLCHAIN: go1.26.8
+      CUDYROUTE_REPOSITORY: ${{ github.repository }}
+      GOMODCACHE: ${{ github.workspace }}/build/gomod
+      GOCACHE: ${{ github.workspace }}/build/gocache
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.8'
+          cache: false
+      - uses: actions/cache@v4
+        with:
+          path: |
+            build/gomod
+            build/gocache
+          key: go-${{ runner.os }}-${{ runner.arch }}-1.26.8-${{ hashFiles('go.sum', 'scripts/build.sh', 'patches/**') }}
+          restore-keys: |
+            go-${{ runner.os }}-${{ runner.arch }}-1.26.8-
+      - name: Test controller and LuCI
+        run: |
+          mkdir -p build
+          printf 'module cudyroute-build-cache\n\ngo 1.25.0\n' > build/go.mod
+          if go test -race ./... > build/controller-test.log 2>&1; then
+            cat build/controller-test.log
+          else
+            cat build/controller-test.log
+            python3 -c 'from pathlib import Path; log=Path("build/controller-test.log").read_text()[-60000:]; print("::error title=Controller tests::" + log.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A"))'
+            exit 1
+          fi
+          go vet ./...
+          node --check files/www/luci-static/resources/view/cudyroute/main.js
+          node tests/ui-smoke.cjs
+          sh -n install.sh scripts/*.sh
+      - name: Configure APK signing
+        if: github.event_name != 'pull_request'
+        env:
+          SIGNING_KEY_PEM: ${{ secrets.CUDYROUTE_APK_SIGNING_KEY }}
+        run: |
+          if [ -n "$SIGNING_KEY_PEM" ]; then
+            mkdir -p build
+            umask 077
+            printf '%s\n' "$SIGNING_KEY_PEM" > build/cudyroute-private.pem
+            openssl rsa -in build/cudyroute-private.pem -check -noout
+          fi
+      - name: Build signed WR3000U packages
+        run: ./scripts/build.sh
+      - name: Check installer platform and memory guards
+        run: python3 tests/install-check.py
+      - name: Test generated configuration and failover with Linux core
+        env:
+          CUDYROUTE_TEST_SERVICES: ''
+        run: ./scripts/test-linux.sh
+      - name: Verify bundle checksums
+        run: |
+          cd dist
+          sha256sum -c SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CudyRoute-wr3000u-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+          path: |
+            dist/cudyroute-wr3000u-*.tar.gz
+            dist/cudyroute-wr3000u.tar.gz
+            dist/luci-app-cudyroute-*.apk
+            dist/cudyroute-core-*.apk
+            dist/sing-box-*-wr3000u.gz
+            dist/manifest.json
+            dist/SHA256SUMS
+            dist/SHA256SUMS.bundle
+            dist/keys/cudyroute.pub
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: CudyRoute-wr3000u-${{ github.sha }}
+          path: dist
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          cat > release-notes.md <<'EOF'
+          CudyRoute для OpenWrt APK, mediatek/filogic (aarch64_cortex-a53).
+
+          Для установки скачайте cudyroute-wr3000u-0.4.0.tar.gz. Инструкция находится в README.md и docs/INSTALL.md репозитория; README.ru.md также включён в архив.
+
+          По умолчанию VPN отключён. Для установки рядом с работающим VPN используйте install.sh --disabled.
+          EOF
+          gh release create "$RELEASE_TAG" --verify-tag --title "CudyRoute $RELEASE_TAG" --notes-file release-notes.md dist/*.tar.gz dist/*.apk dist/*-wr3000u.gz dist/manifest.json dist/SHA256SUMS dist/SHA256SUMS.bundle dist/keys/cudyroute.pub

@@ -1,0 +1,7 @@
+{
+ "luci-app-cudyroute": {
+  "description": "CudyRoute subscriptions and routing",
+  "read": { "ubus": { "cudyroute": [ "state" ] } },
+  "write": { "ubus": { "cudyroute": [ "save", "subscription", "refresh", "catalogue", "rules", "updatecheck", "check", "start", "stop" ] } }
+ }
+}

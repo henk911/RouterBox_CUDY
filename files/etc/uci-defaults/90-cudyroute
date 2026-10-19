@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+mkdir -p /etc/cudyroute
+chmod 700 /etc/cudyroute
+[ -f /etc/cudyroute/settings.json ] || /usr/bin/cudyroute defaults > /etc/cudyroute/settings.json
+chmod 600 /etc/cudyroute/settings.json
+uci -q get firewall.cudyroute >/dev/null || {
+ uci set firewall.cudyroute=include
+ uci set firewall.cudyroute.type=script
+ uci set firewall.cudyroute.path=/usr/lib/cudyroute/network
+ uci set firewall.cudyroute.fw4_compatible=1
+ uci commit firewall
+}
+/etc/init.d/cudyroute enable
+exit 0

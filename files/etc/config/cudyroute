@@ -1,0 +1,2 @@
+config cudyroute 'main'
+ option profile 'cudy-wr3000u'

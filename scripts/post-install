@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+[ -z "${IPKG_INSTROOT:-}" ] || exit 0
+[ -f /etc/uci-defaults/90-cudyroute ] && {
+ sh /etc/uci-defaults/90-cudyroute
+ rm -f /etc/uci-defaults/90-cudyroute
+}
+/etc/init.d/rpcd restart
+/etc/init.d/cudyroute restart
+exit 0
