@@ -95,7 +95,7 @@ jobs:
             dist/keys/cudyroute.pub
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/main' && github.repository == 'henk911/RouterBox_CUDY')
     needs: build
     runs-on: ubuntu-24.04
     permissions:
@@ -109,7 +109,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v0.4.0' }}
         run: |
           cat > release-notes.md <<'EOF'
           CudyRoute для OpenWrt APK, mediatek/filogic (aarch64_cortex-a53).
@@ -118,4 +118,8 @@ jobs:
 
           По умолчанию VPN отключён. Для установки рядом с работающим VPN используйте install.sh --disabled.
           EOF
-          gh release create "$RELEASE_TAG" --verify-tag --title "CudyRoute $RELEASE_TAG" --notes-file release-notes.md dist/*.tar.gz dist/*.apk dist/*-wr3000u.gz dist/manifest.json dist/SHA256SUMS dist/SHA256SUMS.bundle dist/keys/cudyroute.pub
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists; keeping its signed assets unchanged."
+            exit 0
+          fi
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --title "CudyRoute $RELEASE_TAG" --notes-file release-notes.md dist/*.tar.gz dist/*.apk dist/*-wr3000u.gz dist/manifest.json dist/SHA256SUMS dist/SHA256SUMS.bundle dist/keys/cudyroute.pub

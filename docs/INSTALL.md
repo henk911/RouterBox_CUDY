@@ -11,7 +11,7 @@ git remote set-url origin https://github.com/henk911/RouterBox_CUDY.git
 git push -u origin main
 ```
 
-После успешного workflow создайте тег:
+Первый успешный workflow в `main` репозитория `henk911/RouterBox_CUDY` сам публикует `v0.4.0`. Для ручного выпуска в другом репозитории создайте тег:
 
 ```sh
 git tag v0.4.0
