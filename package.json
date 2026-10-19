@@ -1,0 +1,9 @@
+{
+  "name": "cudyroute-ui-tests",
+  "private": true,
+  "version": "0.4.1",
+  "description": "Development-only browser regression checks; not installed on the router",
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

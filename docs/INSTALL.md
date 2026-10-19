@@ -11,18 +11,18 @@ git remote set-url origin https://github.com/henk911/RouterBox_CUDY.git
 git push -u origin main
 ```
 
-Первый успешный workflow в `main` репозитория `henk911/RouterBox_CUDY` сам публикует `v0.4.0`. Для ручного выпуска в другом репозитории создайте тег:
+Первый успешный workflow в `main` репозитория `henk911/RouterBox_CUDY` сам публикует `v0.4.1`. Для ручного выпуска в другом репозитории создайте тег:
 
 ```sh
-git tag v0.4.0
-git push origin v0.4.0
+git tag v0.4.1
+git push origin v0.4.1
 ```
 
 Во вкладке Actions дождитесь успешной сборки и публикации. Исходники ZIP также можно распаковать и загрузить обычным Git, но Git bundle сохраняет историю оригинала и изменения порта.
 
 ## SSH
 
-Скачайте `cudyroute-wr3000u-0.4.0.tar.gz` из Releases и передайте на роутер, как описано в README. Выполните сначала `sh ./install.sh --check`, затем `sh ./install.sh --flash`.
+Скачайте `cudyroute-wr3000u-0.4.1.tar.gz` из Releases и передайте на роутер, как описано в README. Выполните сначала `sh ./install.sh --check`, затем `sh ./install.sh --flash`.
 
 После публикации релиза можно скачать и запустить bootstrap с компьютера роутера:
 

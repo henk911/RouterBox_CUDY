@@ -11,7 +11,7 @@ import tempfile
 root = pathlib.Path(__file__).resolve().parent.parent
 with tempfile.TemporaryDirectory(prefix='cudyroute-check-') as temp:
     base = pathlib.Path(temp)
-    with tarfile.open(root / 'dist/cudyroute-wr3000u-0.4.0.tar.gz') as tar:
+    with tarfile.open(root / 'dist/cudyroute-wr3000u-0.4.1.tar.gz') as tar:
         tar.extractall(base, filter='data')
     bundle = base / 'cudyroute-wr3000u'
     system = base / 'system'

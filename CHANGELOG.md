@@ -1,5 +1,11 @@
 # CudyRoute changelog
 
+## 0.4.1
+
+- Match the actual LuCI light/dark theme for cards, toolbar, fields and dialogs.
+- Replace faded inherited text with explicit high-contrast colours.
+- Add browser contrast regressions and a standalone frontend update asset.
+
 ## 0.4.0
 
 - Independent ARM64 port for Cudy WR3000U v1, OpenWrt 25.12.x APK.

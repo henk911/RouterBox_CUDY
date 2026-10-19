@@ -54,6 +54,18 @@ jobs:
           node --check files/www/luci-static/resources/view/cudyroute/main.js
           node tests/ui-smoke.cjs
           sh -n install.sh scripts/*.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check light and dark LuCI contrast in Chromium
+        run: |
+          npm ci --ignore-scripts
+          npx playwright install --with-deps chromium --only-shell
+          mkdir -p build output/playwright
+          CUDYROUTE_WRITE_FIXTURE=1 node tests/ui-smoke.cjs
+          node tests/ui-preview.cjs
+          node tests/theme-smoke.cjs
       - name: Configure APK signing
         if: github.event_name != 'pull_request'
         env:
@@ -92,6 +104,8 @@ jobs:
             dist/manifest.json
             dist/SHA256SUMS
             dist/SHA256SUMS.bundle
+            dist/cudyroute-ui.js
+            dist/update-ui.sh
             dist/keys/cudyroute.pub
 
   release:
@@ -109,12 +123,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v0.4.0' }}
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v0.4.1' }}
         run: |
           cat > release-notes.md <<'EOF'
           CudyRoute для OpenWrt APK, mediatek/filogic (aarch64_cortex-a53).
 
-          Для установки скачайте cudyroute-wr3000u-0.4.0.tar.gz. Инструкция находится в README.md и docs/INSTALL.md репозитория; README.ru.md также включён в архив.
+          Для установки скачайте cudyroute-wr3000u-0.4.1.tar.gz. Инструкция находится в README.md и docs/INSTALL.md репозитория; README.ru.md также включён в архив.
 
           По умолчанию VPN отключён. Для установки рядом с работающим VPN используйте install.sh --disabled.
           EOF
@@ -122,4 +136,4 @@ jobs:
             echo "Release $RELEASE_TAG already exists; keeping its signed assets unchanged."
             exit 0
           fi
-          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --title "CudyRoute $RELEASE_TAG" --notes-file release-notes.md dist/*.tar.gz dist/*.apk dist/*-wr3000u.gz dist/manifest.json dist/SHA256SUMS dist/SHA256SUMS.bundle dist/keys/cudyroute.pub
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --title "CudyRoute $RELEASE_TAG" --notes-file release-notes.md dist/*.tar.gz dist/*.apk dist/*-wr3000u.gz dist/manifest.json dist/SHA256SUMS dist/SHA256SUMS.bundle dist/cudyroute-ui.js dist/update-ui.sh dist/keys/cudyroute.pub

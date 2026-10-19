@@ -1,5 +1,5 @@
 #!/bin/sh
-# After publishing v0.4.0 or newer, download a signed release bundle.
+# After publishing v0.4.1 or newer, download a signed release bundle.
 set -eu
 REPO=${CUDYROUTE_REPOSITORY:-henk911/RouterBox_CUDY}
 MODE=${1:---flash}

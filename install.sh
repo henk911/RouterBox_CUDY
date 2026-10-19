@@ -41,7 +41,7 @@ cp keys/cudyroute.pub /etc/apk/keys/cudyroute.pub
 apk update
 if [ "$MODE" = --disabled ]; then
  [ ! -S /tmp/cudyroute/control.sock ] || { echo 'Сначала остановите уже запущенный CudyRoute' >&2; exit 1; }
- apk add --no-scripts --no-commit-hooks ./cudyroute-core-1.14.2-r14.apk ./luci-app-cudyroute-0.4.0-r1.apk
+ apk add --no-scripts --no-commit-hooks ./cudyroute-core-1.14.2-r14.apk ./luci-app-cudyroute-0.4.1-r1.apk
  rm -f /etc/uci-defaults/90-cudyroute
  /etc/init.d/cudyroute disable
  mkdir -p /etc/cudyroute
@@ -53,8 +53,8 @@ if [ "$MODE" = --disabled ]; then
  echo 'Установлено без запуска. VPN отключён на новой установке.'
  exit 0
 elif [ "$MODE" = --app-only ]; then
- apk add ./luci-app-cudyroute-0.4.0-r1.apk
+ apk add ./luci-app-cudyroute-0.4.1-r1.apk
 else
- apk add ./cudyroute-core-1.14.2-r14.apk ./luci-app-cudyroute-0.4.0-r1.apk
+ apk add ./cudyroute-core-1.14.2-r14.apk ./luci-app-cudyroute-0.4.1-r1.apk
 fi
 echo 'Откройте LuCI → Сервисы → CudyRoute. На новой установке VPN отключён.'
